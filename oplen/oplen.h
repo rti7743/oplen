@@ -49,11 +49,11 @@ public:
 		//0x01  1バイトの命令
 		//0x02  2バイトの命令
 		//...
-		//0xff	modrw
-		//0xfd	modrw + 4
-		//0xfc	modrw + 1
-		//0xfb  modrw + 4 or modrw + 1 or 2
-		//0xfa  modrw + 1 or 2
+		//0xff	modrm
+		//0xfd	modrm + 4
+		//0xfc	modrm + 1
+		//0xfb  modrm + 4 or modrm + 1 or 2
+		//0xfa  modrm + 1 or 2
 		//0xf5	66 の影響を受ける 5バイト長の命令
 		//0xe5	66 の影響を受ける 5バイト長の命令  64bitで48をつけると 64bitになる命令
 		static unsigned char codeTable[] = {
@@ -219,7 +219,7 @@ public:
 			unsigned char mod = 0;
 			unsigned char reg = 0;
 			unsigned char rw =  0;
-			int modlen = modrwLen( *(code + 1) ,*(code + 2) ,&mod,&reg,&rw);
+			int modlen = modrmLen( *(code + 1) ,*(code + 2) ,&mod,&reg,&rw);
 
 			if ( len == 0xff)
 			{
@@ -243,7 +243,7 @@ public:
 				return 1 + 1 + modlen + 1 + ex;
 			}
 			if ( len == 0xfb)
-			{//modrw によって長さが変わる
+			{//modrm によって長さが変わる
 				if (reg == 0)
 				{
 					if (registersize == 0x66)
@@ -259,7 +259,7 @@ public:
 				else return 1 + 1 + ex;
 			}
 			if ( len == 0xfa)
-			{//modrw によって長さが変わる
+			{//modrm によって長さが変わる
 				if (reg == 0) return 1 + 1 + 1 + modlen + ex;
 				else if (reg >= 2) return 1 + 1 + modlen + ex;
 				else return 1 + 1 + ex;
@@ -270,11 +270,11 @@ public:
 		return 0;
 	}
 
-	static int modrwLen(unsigned char modrw,unsigned char sib,unsigned char *mod,unsigned char *reg,unsigned char *rw) 
+	static int modrmLen(unsigned char modrm,unsigned char sib,unsigned char *mod,unsigned char *reg,unsigned char *rw) 
 	{
-		*mod = (modrw & 0xc0) >> 6;
-		*reg = (modrw & 0x38) >> 3;
-		*rw =  (modrw & 0x07);
+		*mod = (modrm & 0xc0) >> 6;
+		*reg = (modrm & 0x38) >> 3;
+		*rw =  (modrm & 0x07);
 
 		switch (*mod)
 		{
